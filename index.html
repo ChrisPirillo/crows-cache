@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#000000">
+    
+    <!-- SEO Meta Tags -->
+    <title>Crow's Cache | Retro Arcade Game</title>
+    <meta name="description" content="A free retro arcade game. Catch falling oranges dropped by a mischievous crow in this pixel-art browser game. Test your reflexes and save the loot!">
+    <meta name="keywords" content="Crows Cache, arcade game, retro game, pixel art, catch the falling objects, browser game, HTML5 game, casual game, free game">
+    <meta name="author" content="Chris Pirillo">
+    <link rel="canonical" href="https://pirillo.com/arcade/crows-cache.html">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://pirillo.com/arcade/crows-cache.html">
+    <meta property="og:title" content="Crow's Cache | Retro Arcade Game">
+    <meta property="og:description" content="The crow is dropping the loot! Save the stolen oranges in this retro pixel-art arcade game.">
+    <meta property="og:image" content="https://pirillo.com/arcade/images/crows-cache.png">
+    <meta property="og:site_name" content="Pirillo Arcade">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@ChrisPirillo">
+    <meta name="twitter:creator" content="@ChrisPirillo">
+    <meta name="twitter:url" content="https://pirillo.com/arcade/crows-cache.html">
+    <meta name="twitter:title" content="Crow's Cache">
+    <meta name="twitter:description" content="Play Crow's Cache. Catch the falling loot in this retro arcade browser game.">
+    <meta name="twitter:image" content="https://pirillo.com/arcade/images/crows-cache.png">
+
+    <!-- Resource Hints for Performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://www.googletagmanager.com">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+
+    <!-- Structured Data (JSON-LD) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "VideoGame",
+      "name": "Crow's Cache",
+      "author": {
+        "@type": "Person",
+        "name": "Chris Pirillo",
+        "url": "https://pirillo.com"
+      },
+      "description": "A retro-style arcade game where players catch oranges dropped by a flying crow.",
+      "genre": ["Arcade", "Casual"],
+      "gamePlatform": "Web Browser",
+      "applicationCategory": "Game",
+      "operatingSystem": "Any",
+      "image": "https://pirillo.com/arcade/images/crows-cache.png",
+      "url": "https://pirillo.com/arcade/crows-cache.html",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      }
+    }
+    </script>
+
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-1CQ4D3VQ3L"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-1CQ4D3VQ3L');
+    </script>
+
+    <style>
+        /* Critical CSS optimizations */
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            color: #eee;
+            font-family: 'Press Start 2P', cursive;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            touch-action: none; /* Prevent browser zooming/scrolling */
+        }
+
+        #game-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            /* Retro Banded Background - Orchard Style */
+            background: linear-gradient(to bottom, 
+                #87CEEB 0%, #87CEEB 15%,      /* Sky */
+                #76c043 15%, #76c043 30%,     /* Sunlit Treetops */
+                #4e9133 30%, #4e9133 60%,     /* Mid Canopy */
+                #2a5a1b 60%, #2a5a1b 100%);   /* Deep Shade/Ground */
+            image-rendering: pixelated;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            background-color: transparent;
+            cursor: none;
+            image-rendering: pixelated;
+        }
+
+        #ui-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .score-display {
+            font-size: 24px;
+            padding: 24px;
+            text-align: left;
+            text-shadow: 4px 4px 0 #000;
+            color: #fff;
+        }
+
+        #start-screen, #game-over-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            pointer-events: auto;
+        }
+
+        h1 {
+            font-size: 40px;
+            margin: 0 0 40px 0;
+            color: #FFA500; /* Orange */
+            text-transform: uppercase;
+            text-shadow: 6px 6px 0 #8B4500;
+            text-align: center;
+            line-height: 1.5;
+        }
+
+        p {
+            font-size: 16px;
+            margin-bottom: 40px;
+            text-align: center;
+            line-height: 2;
+            max-width: 90%;
+            color: #ccc;
+        }
+
+        button {
+            background: #FFA500;
+            color: #000;
+            border: 4px solid #fff;
+            padding: 20px 40px;
+            font-size: 20px;
+            font-family: inherit;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            box-shadow: 8px 8px 0 #000;
+            transition: transform 0.1s;
+        }
+
+        button:active {
+            transform: translate(4px, 4px);
+            box-shadow: 4px 4px 0 #000;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Scanline effect for retro feel */
+        .scanlines {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                to bottom,
+                rgba(255,255,255,0),
+                rgba(255,255,255,0) 50%,
+                rgba(0,0,0,0.2) 50%,
+                rgba(0,0,0,0.2)
+            );
+            background-size: 100% 4px;
+            pointer-events: none;
+            z-index: 5;
+        }
+    </style>
+</head>
+<body>
+
+    <main id="game-container">
+        <canvas id="gameCanvas" aria-label="Game canvas area where you catch falling oranges with a nest.">
+            Your browser does not support the canvas element. Please update to a modern browser to play Crow's Cache.
+        </canvas>
+        <div class="scanlines"></div>
+        
+        <div id="ui-layer">
+            <div class="score-display">SCORE: <span id="scoreVal">0</span></div>
+        </div>
+
+        <section id="start-screen">
+            <h1>CROW'S<br>CACHE</h1>
+            <p>THE CROW IS DROPPING THE LOOT!<br>SAVE THE STOLEN ORANGES.</p>
+            <p style="font-size: 10px; color: #888;">MOUSE / TOUCH / ARROWS</p>
+            <button id="startBtn" aria-label="Start Game">PLAY</button>
+        </section>
+
+        <section id="game-over-screen" class="hidden">
+            <h1 style="color: #ff4444; font-size: 32px;">GAME OVER</h1>
+            <p>SCORE: <span id="finalScore">0</span></p>
+            <button id="restartBtn" aria-label="Try Again">TRY AGAIN</button>
+        </section>
+    </main>
+
+    <script>
+        // --- 8-BIT SPRITE LIBRARY ---
+        // 1 = Main Color, 2 = Secondary/Highlight, 0 = Transparent
+        const SPRITES = {
+            // Toucan Sprites (Reverted)
+            // 1=Black Body, 2=White Face, 3=Orange Beak, 4=Wing
+            CREATURE_IDLE: [
+                "00000000000000000000",
+                "00000011111000000000",
+                "00001122211113333330",
+                "00011221111113333330", // Fixed Eye: Replaced 0 with 1
+                "00011222111113333300",
+                "00001111111111110000",
+                "00011144411144411100", // Wings tucked
+                "00011111111111111100",
+                "00000111111111100000",
+                "00000011000011000000"
+            ],
+            CREATURE_MOVE: [
+                "00000000000000000000",
+                "00000011111000000000",
+                "00001122211113333330",
+                "00011221111113333330", // Fixed Eye: Replaced 0 with 1
+                "00011222111113333300",
+                "00114411111144110000", // Wings UP
+                "01111111111111111000", 
+                "00001111111111100000",
+                "00000110000011000000",
+                "00000000000000000000"
+            ],
+            NEST: [
+                // Redesigned: Messier, jagged twigs, darker wood
+                "00000000000000000000000000000000",
+                "00010001000010001000100001000000", // Messy loose twigs
+                "01111101111101111101111101111100", // Uneven rim
+                "11211112111121111211112111121111", // Body
+                "11112111121111211112111121111211", 
+                "01111121111121111121111121111110", 
+                "00111111111111111111111111111100", // Tapered bottom
+                "00011110011100111001111000000000"  // Jagged bottom
+            ],
+            ORANGE: [
+                "00011100",
+                "01111110",
+                "11221111",
+                "12221111", 
+                "12221111",
+                "11111111",
+                "01111110",
+                "00011100"
+            ],
+            LEAF: [
+                "010",
+                "111",
+                "010"
+            ],
+            SPLASH: [
+                // Bigger orange splat (20px wide)
+                "00000000000000000000",
+                "00000010000100000000", 
+                "00010011111100100000",
+                "00111111111111111100",
+                "01111111111111111110",
+                "11111111111111111111"
+            ]
+        };
+
+        const PIXEL_SCALE = 6; 
+
+        // --- Audio System ---
+        const AudioSys = {
+            ctx: null,
+            init: function() {
+                window.AudioContext = window.AudioContext || window.webkitAudioContext;
+                this.ctx = new AudioContext();
+            },
+            playTone: function(freq, type, duration, vol = 0.1) {
+                if (!this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+                gain.gain.setValueAtTime(vol, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + duration);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + duration);
+            },
+            playNoise: function(duration, vol = 0.2) {
+                if (!this.ctx) return;
+                const bufferSize = this.ctx.sampleRate * duration;
+                const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = Math.random() * 2 - 1;
+                }
+                const noise = this.ctx.createBufferSource();
+                noise.buffer = buffer;
+                const gain = this.ctx.createGain();
+                gain.gain.setValueAtTime(vol, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + duration);
+                noise.connect(gain);
+                gain.connect(this.ctx.destination);
+                noise.start();
+            },
+            playCatch: function() {
+                if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume();
+                this.playTone(600 + Math.random() * 200, 'square', 0.1, 0.1);
+            },
+            playSplat: function() {
+                if (!this.ctx) return;
+                if (this.ctx.state === 'suspended') this.ctx.resume();
+                
+                // 1. Noise burst (The wet "Spl" sound) - Louder
+                this.playNoise(0.3, 0.5); 
+                
+                // 2. Sliding tone downwards (The "thud" part) - Louder
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sawtooth';
+                
+                // Start higher for more impact
+                osc.frequency.setValueAtTime(400, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(50, this.ctx.currentTime + 0.25); 
+                
+                // Increased volume
+                gain.gain.setValueAtTime(0.4, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.25);
+                
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.25);
+            },
+            playLevelUp: function() {
+                if(!this.ctx) return;
+                [400, 500, 600, 800].forEach((freq, i) => {
+                    setTimeout(() => this.playTone(freq, 'square', 0.1, 0.1), i * 100);
+                });
+            }
+        };
+
+        // --- Game Constants & State ---
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreEl = document.getElementById('scoreVal');
+        const finalScoreEl = document.getElementById('finalScore');
+        const startScreen = document.getElementById('start-screen');
+        const gameOverScreen = document.getElementById('game-over-screen');
+        const startBtn = document.getElementById('startBtn');
+        const restartBtn = document.getElementById('restartBtn');
+
+        // Configuration
+        const GRAVITY_BASE = 400; 
+        const BASE_SPAWN_INTERVAL = 1000; 
+        const MAX_BUCKETS = 3;
+        const PLAYER_Y_OFFSET = 120; 
+        const BUCKET_HEIGHT_PX = 8; 
+        const BUCKET_HEIGHT = BUCKET_HEIGHT_PX * PIXEL_SCALE; 
+
+        // Game State
+        let gameState = {
+            running: false,
+            score: 0,
+            level: 1,
+            lastTime: 0,
+            spawnTimer: 0,
+            nextSpawnTime: 0, // When the next drop should happen
+            buckets: 3,
+            entities: {
+                creature: { x: 0, y: 70, dir: 1, speed: 150, timer: 0 },
+                player: { x: 0, width: 32 * PIXEL_SCALE }, 
+                oranges: [],
+                splashes: [] 
+            }
+        };
+
+        let input = { x: 0, isTouch: false };
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            if (!gameState.running) {
+                input.x = canvas.width / 2;
+                gameState.entities.player.x = canvas.width / 2;
+            }
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        // --- Game Logic ---
+
+        function startGame() {
+            AudioSys.init();
+            gameState.running = true;
+            gameState.score = 0;
+            gameState.level = 1;
+            gameState.buckets = MAX_BUCKETS;
+            gameState.entities.oranges = [];
+            gameState.entities.splashes = [];
+            gameState.entities.creature.x = canvas.width / 2;
+            gameState.nextSpawnTime = 1000; // First drop delay
+            
+            scoreEl.innerText = '0';
+            startScreen.classList.add('hidden');
+            gameOverScreen.classList.add('hidden');
+            
+            gameState.lastTime = performance.now();
+            requestAnimationFrame(gameLoop);
+        }
+
+        function gameOver() {
+            gameState.running = false;
+            finalScoreEl.innerText = gameState.score;
+            gameOverScreen.classList.remove('hidden');
+        }
+
+        function handleInput(xClient) {
+            const rect = canvas.getBoundingClientRect();
+            let x = xClient - rect.left;
+            x = Math.max(gameState.entities.player.width/2, Math.min(canvas.width - gameState.entities.player.width/2, x));
+            input.x = x;
+        }
+
+        window.addEventListener('mousemove', e => handleInput(e.clientX));
+        window.addEventListener('touchmove', e => {
+            e.preventDefault();
+            handleInput(e.touches[0].clientX);
+            input.isTouch = true;
+        }, { passive: false });
+        
+        window.addEventListener('keydown', e => {
+            const speed = 20;
+            if (e.key === 'ArrowLeft') input.x -= speed;
+            if (e.key === 'ArrowRight') input.x += speed;
+            input.x = Math.max(gameState.entities.player.width/2, Math.min(canvas.width - gameState.entities.player.width/2, input.x));
+        });
+
+        startBtn.addEventListener('click', startGame);
+        restartBtn.addEventListener('click', startGame);
+
+        // --- Core Loop ---
+
+        function update(dt) {
+            const { creature, player, oranges, splashes } = gameState.entities;
+
+            // Player Logic
+            const lerpFactor = input.isTouch ? 0.3 : 0.5;
+            player.x += (input.x - player.x) * lerpFactor;
+
+            // --- Erratic Creature Logic ---
+            creature.timer -= dt;
+            if (creature.timer <= 0) {
+                // Determine new behavior
+                const actionRoll = Math.random();
+                
+                if (actionRoll < 0.2 && gameState.level > 2) {
+                    // STOP briefly (fake out)
+                    creature.speed = 0;
+                    creature.timer = 0.2 + (Math.random() * 0.3);
+                } else if (actionRoll < 0.4 && gameState.level > 4) {
+                    // DART (Fast change direction)
+                    creature.dir *= -1;
+                    creature.speed = 300 + (gameState.level * 40); // Fast!
+                    creature.timer = 0.3 + (Math.random() * 0.3);
+                } else {
+                    // Normal Move (Random Dir)
+                    // Occasionally pick a direction and stick to it to fly off screen
+                    creature.dir = Math.random() > 0.5 ? 1 : -1;
+                    creature.speed = 150 + (gameState.level * 25) + (Math.random() * 100);
+                    // Shorter timer = more erratic
+                    creature.timer = 0.4 + (Math.random() * 0.8);
+                }
+            }
+            creature.x += creature.speed * creature.dir * dt;
+            
+            // --- Off-Screen "Fetching" Logic ---
+            // Replaced the hard margins with a "return" logic
+            const offScreenLimit = 40 * PIXEL_SCALE; // How far off screen it can go
+            
+            if (creature.x < -offScreenLimit) {
+                // Too far left! Fly back right quickly
+                creature.x = -offScreenLimit; 
+                creature.dir = 1;
+                creature.speed = 400 + (gameState.level * 50); // Zoom back
+                creature.timer = 1.5; // Commit to flying back for a bit
+            } else if (creature.x > canvas.width + offScreenLimit) {
+                // Too far right! Fly back left quickly
+                creature.x = canvas.width + offScreenLimit;
+                creature.dir = -1;
+                creature.speed = 400 + (gameState.level * 50); // Zoom back
+                creature.timer = 1.5;
+            }
+
+            // --- Chaotic Spawning Logic ---
+            gameState.spawnTimer += dt * 1000;
+            
+            if (gameState.spawnTimer > gameState.nextSpawnTime) {
+                // Only spawn if on screen!
+                const isOnScreen = creature.x > 20 && creature.x < canvas.width - 20;
+
+                if (isOnScreen) {
+                    gameState.spawnTimer = 0;
+                    
+                    // Spawn Orange
+                    oranges.push({
+                        x: creature.x,
+                        y: creature.y + (10 * PIXEL_SCALE),
+                        vy: 150 + (gameState.score * 2.5), 
+                        w: 8 * PIXEL_SCALE, 
+                        h: 8 * PIXEL_SCALE
+                    });
+
+                    // Calculate Random Delay for NEXT spawn
+                    // As score increases, base delay gets smaller
+                    const baseDelay = Math.max(200, BASE_SPAWN_INTERVAL - (gameState.score * 0.8));
+                    
+                    // Chaos factor: Randomly short (burst) or long (pause)
+                    const chaosRoll = Math.random();
+                    let chaosMultiplier = 1;
+                    
+                    if (chaosRoll < 0.25) {
+                        // BURST! Very short delay
+                        chaosMultiplier = 0.2; 
+                    } else if (chaosRoll > 0.85) {
+                        // Pause
+                        chaosMultiplier = 1.8;
+                    } else {
+                        // Normal variance
+                        chaosMultiplier = 0.8 + (Math.random() * 0.6);
+                    }
+
+                    gameState.nextSpawnTime = baseDelay * chaosMultiplier;
+                }
+            }
+
+            // Oranges Logic
+            const bucketW = 32 * PIXEL_SCALE;
+            const topBucketCenterY = canvas.height - PLAYER_Y_OFFSET - ((gameState.buckets - 1) * BUCKET_HEIGHT);
+            const collisionY = topBucketCenterY - (BUCKET_HEIGHT / 2);
+
+            for (let i = oranges.length - 1; i >= 0; i--) {
+                let o = oranges[i];
+                o.vy += GRAVITY_BASE * dt; 
+                o.y += o.vy * dt;
+
+                // Collision
+                const orangeBottom = o.y + (o.h / 2);
+                
+                if (orangeBottom >= collisionY && orangeBottom <= collisionY + BUCKET_HEIGHT) {
+                    if (o.x > player.x - bucketW/2 && o.x < player.x + bucketW/2) {
+                        AudioSys.playCatch();
+                        gameState.score += 10;
+                        scoreEl.innerText = gameState.score;
+                        oranges.splice(i, 1);
+
+                        if (gameState.score > 0 && gameState.score % 500 === 0) {
+                            gameState.level++;
+                            AudioSys.playLevelUp();
+                        }
+                        continue;
+                    }
+                }
+
+                // Missed
+                if (o.y > canvas.height - 10) {
+                    AudioSys.playSplat();
+                    splashes.push({x: o.x, y: canvas.height - 10, time: 0.5});
+                    oranges.splice(i, 1);
+                    gameState.buckets--;
+                    
+                    if (gameState.buckets <= 0) {
+                        gameOver();
+                    }
+                }
+            }
+
+            // Splashes
+            for (let i = splashes.length - 1; i >= 0; i--) {
+                splashes[i].time -= dt;
+                if (splashes[i].time <= 0) splashes.splice(i, 1);
+            }
+        }
+
+        // --- 8-BIT DRAWING FUNCTIONS ---
+
+        function drawSprite(sprite, cx, cy, colors, scale, flipX = false) {
+            const h = sprite.length;
+            const w = sprite[0].length;
+            
+            const startX = Math.floor(cx - (w * scale) / 2);
+            const startY = Math.floor(cy - (h * scale) / 2);
+
+            for (let r = 0; r < h; r++) {
+                for (let c = 0; c < w; c++) {
+                    const char = sprite[r][flipX ? w - 1 - c : c];
+                    if (char !== '0') {
+                        ctx.fillStyle = colors[char] || colors['1'];
+                        ctx.fillRect(startX + c * scale, startY + r * scale, scale, scale);
+                    }
+                }
+            }
+        }
+
+        function draw() {
+            ctx.clearRect(0,0, canvas.width, canvas.height);
+
+            // 1. Draw UI Floor Line (Pixelated)
+            ctx.fillStyle = '#1a5e1a'; // Darker green floor
+            ctx.fillRect(0, canvas.height - 20, canvas.width, 20);
+
+            // 2. Draw CREATURE (Toucan Reverted)
+            const c = gameState.entities.creature;
+            const frame = Math.floor(performance.now() / 150) % 2;
+            const creatureSprite = frame === 0 ? SPRITES.CREATURE_IDLE : SPRITES.CREATURE_MOVE;
+            const flip = c.dir < 0;
+
+            drawSprite(creatureSprite, c.x, c.y, {
+                '1': '#222222', // Black Body
+                '2': '#FFFFFF', // White Face
+                '3': '#FFA500', // Orange Beak
+                '4': '#444444'  // Dark Grey Wing
+            }, PIXEL_SCALE, flip);
+
+            // 3. Draw NESTS (Stack)
+            const p = gameState.entities.player;
+            
+            for (let i = 0; i < gameState.buckets; i++) {
+                const yPos = canvas.height - PLAYER_Y_OFFSET - (i * BUCKET_HEIGHT);
+                
+                drawSprite(SPRITES.NEST, p.x, yPos, {
+                    '1': '#CD853F', // Peru (Lighter Wood)
+                    '2': '#DEB887'  // Burlywood (Pale highlight)
+                }, PIXEL_SCALE);
+            }
+
+            // 4. Draw SPLASHES
+            gameState.entities.splashes.forEach(s => {
+                drawSprite(SPRITES.SPLASH, s.x, s.y, { '1': '#FF8C00' }, PIXEL_SCALE);
+            });
+
+            // 5. Draw ORANGES
+            gameState.entities.oranges.forEach(o => {
+                drawSprite(SPRITES.ORANGE, o.x, o.y, {
+                    '1': '#FF8C00', 
+                    '2': '#FFFFFF' 
+                }, PIXEL_SCALE);
+                
+                drawSprite(SPRITES.LEAF, o.x, o.y - (4 * PIXEL_SCALE), {
+                    '1': '#32CD32'
+                }, PIXEL_SCALE);
+            });
+        }
+
+        function gameLoop(timestamp) {
+            if (!gameState.running) return;
+
+            const dt = (timestamp - gameState.lastTime) / 1000;
+            gameState.lastTime = timestamp;
+
+            if (dt < 0.1) {
+                update(dt);
+                draw();
+            }
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        draw();
+
+    </script>
+</body>
+</html>
